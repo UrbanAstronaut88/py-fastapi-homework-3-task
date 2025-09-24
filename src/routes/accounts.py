@@ -204,7 +204,7 @@ async def complete_password_reset(
         token_record = result.scalar_one_or_none()
 
         if not token_record or token_record.token != payload.token:
-            if token_record:  # ✅ удаляем даже при неверном токене
+            if token_record:
                 await db.delete(token_record)
                 await db.commit()
             raise HTTPException(
