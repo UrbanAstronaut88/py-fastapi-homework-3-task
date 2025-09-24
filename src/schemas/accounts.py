@@ -1,11 +1,19 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator, validator
-from database import accounts_validators
-import re
+from pydantic import (BaseModel,
+                      EmailStr,
+                      Field,
+                      field_validator,
+                      ConfigDict
+                      )
+from database.validators import accounts as validators
 
 
 class UserRegistrationRequestSchema(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8, max_length=128)
+    password: str = Field(..., max_length=128)
+
+    @field_validator("password")
+    def validate_password(cls, value):
+        return validators.validate_password_strength(value)
 
 
 class UserActivationRequestSchema(BaseModel):
@@ -22,10 +30,9 @@ class PasswordResetCompleteRequestSchema(BaseModel):
     token: str = Field(..., min_length=1)
     password: str = Field(..., min_length=8, max_length=128)
 
-
-class UserLoginResponseSchema(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=128)
+    @field_validator("password")
+    def validate_password(cls, value):
+        return validators.validate_password_strength(value)
 
 
 class UserLoginRequestSchema(BaseModel):
@@ -34,7 +41,7 @@ class UserLoginRequestSchema(BaseModel):
 
 
 class TokenRefreshResponseSchema(BaseModel):
-    token: str = Field(..., min_length=1)
+    access_token: str = Field(..., min_length=1)
 
 
 class TokenRefreshRequestSchema(BaseModel):
@@ -45,8 +52,7 @@ class UserRegistrationResponseSchema(BaseModel):
     id: int
     email: EmailStr
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MessageResponseSchema(BaseModel):
@@ -57,3 +63,7 @@ class TokenResponseSchema(BaseModel):
     access_token: str
     refresh_token: str | None = None
     token_type: str = "bearer"
+
+
+class UserLoginResponseSchema(BaseModel):
+    pass
