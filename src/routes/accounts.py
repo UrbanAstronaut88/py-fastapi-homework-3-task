@@ -28,6 +28,7 @@ from schemas.accounts import (
     UserLoginRequestSchema
 )
 from security.interfaces import JWTAuthManagerInterface
+from security.passwords import hash_password
 from security.utils import generate_secure_token
 
 router = APIRouter(tags=["accounts"])
@@ -219,7 +220,7 @@ async def complete_password_reset(
                 detail="Invalid email or token.",
             )
 
-        user.password = payload.password
+        user._hashed_password = hash_password(payload.password)
 
         await db.delete(token_record)
         await db.commit()
